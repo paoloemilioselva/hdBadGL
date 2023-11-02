@@ -1,0 +1,12 @@
+{
+  "BadGLPlugin": {
+    "valid": true,
+    "menulabel": "BadGL (The BadGL renderer)",
+    "menupriority": 40,
+    "depthstyle": "opengl",
+    "allowbackgroundupdate": false, 
+    "defaultpurposes": [ "guide", "proxy" ],
+    "drawmodesupport": true,
+    "aovsupport": false
+  }
+}
