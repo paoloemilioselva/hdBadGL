@@ -157,14 +157,15 @@ void MyRenderPass::_Execute(
     //auto& passMatrix = hdCamera->GetTransform();
 
     // update your camera-matrix here...
+    glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
+    glPushAttrib(GL_ALL_ATTRIB_BITS);
+    glPushMatrix();
+
     glDisable(GL_BLEND);
     glDisable(GL_LIGHTING);
+    glDepthFunc(GL_LESS);
+    glClear(GL_DEPTH_BUFFER_BIT);
 
-    glPushMatrix();
-    //glClearColor(0.18f, 0.18f, 0.18, 1.0f);
-    //glClear(GL_DEPTH_BUFFER_BIT);
-
-    //glViewport(i_posx, i_posy, i_width, i_height);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glMultMatrixd(proj.data());
@@ -176,4 +177,5 @@ void MyRenderPass::_Execute(
     bool needsRestart = _owner->UpdateScene();
 
     glPopMatrix();
+    glPopAttrib();
 }

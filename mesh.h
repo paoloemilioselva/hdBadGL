@@ -16,7 +16,7 @@ class MyMesh final : public pxr::HdMesh
 public:
     MyMesh(const pxr::SdfPath& id, MyRenderDelegate* delegate);
 
-    virtual ~MyMesh() = default;
+    virtual ~MyMesh() override;
 
     virtual pxr::HdDirtyBits GetInitialDirtyBitsMask() const override;
 
@@ -54,8 +54,6 @@ private:
     bool _normalsValid;
     bool _refined;
     bool _smoothNormals;
-    bool _doubleSided;
-    pxr::HdCullStyle _cullStyle;
     struct PrimvarSource {
         pxr::VtValue data;
         pxr::HdInterpolation interpolation;

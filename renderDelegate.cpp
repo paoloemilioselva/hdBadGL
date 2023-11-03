@@ -108,7 +108,6 @@ pxr::HdRprim* MyRenderDelegate::CreateRprim(pxr::TfToken const& typeId, pxr::Sdf
 {
     if (typeId == pxr::HdPrimTypeTokens->mesh)
     {
-        std::cout << "RPRIM CREATED" << std::endl;
         return new MyMesh(rprimId, this);
     }
     return nullptr;
@@ -116,7 +115,6 @@ pxr::HdRprim* MyRenderDelegate::CreateRprim(pxr::TfToken const& typeId, pxr::Sdf
 
 void MyRenderDelegate::DestroyRprim(pxr::HdRprim* rPrim)
 {
-    std::cout << "RPRIM DELETED" << std::endl;
     delete rPrim;
 }
 
@@ -196,10 +194,8 @@ bool MyRenderDelegate::UpdateScene()
     {
         if (&it)
         {
-
+            it->second->drawGL();
         }
-    //    if (mesh.second)
-    //        mesh.second->drawGL();
     }
 
 
@@ -210,11 +206,11 @@ pxr::VtDictionary MyRenderDelegate::GetRenderStats() const
 {
     pxr::VtDictionary stats;
 
-    static const pxr::TfToken renderProgressAnnotation("renderProgressAnnotation");
-    stats[renderProgressAnnotation] = pxr::VtValue("BadGL rendering progress 100%");
+    static const pxr::TfToken percentDone("percentDone");
+    stats[percentDone] = pxr::VtValue(100);
 
-    static const pxr::TfToken renderStatsAnnotation("renderStatsAnnotation");
-    stats[renderStatsAnnotation] = pxr::VtValue("test:\nline1\nline2\nline3");
+    static const pxr::TfToken meshes(" - meshes ");
+    stats[meshes] = pxr::VtValue( _myMeshes.size() );
     
     return stats;
 }

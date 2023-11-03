@@ -3,10 +3,13 @@
     "valid": true,
     "menulabel": "BadGL (The BadGL renderer)",
     "menupriority": 40,
-    "depthstyle": "opengl",
-    "allowbackgroundupdate": false, 
+    "allowbackgroundupdate": false,
     "defaultpurposes": [ "guide", "proxy" ],
     "drawmodesupport": true,
-    "aovsupport": false
+    "aovsupport": false,
+    "needsdepth": true,
+    "viewstats": [
+      " - meshes "
+    ]
   }
 }

@@ -63,6 +63,12 @@ public:
     {
         _myMeshes[i_path] = i_mesh;
     }
+    void removeMesh(const pxr::SdfPath& i_path)
+    {
+        if (_myMeshes.find(i_path) != _myMeshes.end())
+            _myMeshes.erase(i_path);
+    }
+
 
     pxr::VtDictionary GetRenderStats() const;
 

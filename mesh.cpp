@@ -24,10 +24,15 @@ MyMesh::MyMesh(const pxr::SdfPath& id, MyRenderDelegate* delegate)
     , _normalsValid(false)
     , _refined(false)
     , _smoothNormals(false)
-    , _doubleSided(false)
-    , _cullStyle(pxr::HdCullStyleDontCare)
     , _owner(delegate)
 {
+}
+
+MyMesh::~MyMesh()
+{
+    std::lock_guard<std::mutex> guard(_owner->rendererMutex());
+    _owner->removeMesh(GetId());
+    _instancerTransforms.clear();
 }
 
 void
@@ -115,18 +120,6 @@ MyMesh::_PopulateMesh(pxr::HdSceneDelegate* sceneDelegate,
         _UpdateVisibility(sceneDelegate, dirtyBits);
     }
 
-    if (pxr::HdChangeTracker::IsCullStyleDirty(*dirtyBits, id)) {
-        _cullStyle = GetCullStyle(sceneDelegate);
-    }
-    if (pxr::HdChangeTracker::IsDoubleSidedDirty(*dirtyBits, id)) {
-        _doubleSided = IsDoubleSided(sceneDelegate);
-    }
-    if (pxr::HdChangeTracker::IsPrimvarDirty(*dirtyBits, id, pxr::HdTokens->normals) ||
-        pxr::HdChangeTracker::IsPrimvarDirty(*dirtyBits, id, pxr::HdTokens->widths) ||
-        pxr::HdChangeTracker::IsPrimvarDirty(*dirtyBits, id, pxr::HdTokens->primvar)) {
-        //_UpdatePrimvarSources(sceneDelegate, *dirtyBits);
-    }
-
     bool _materialChanged = false;
     auto matId = sceneDelegate->GetMaterialId(id);
     if (matId != GetMaterialId())
@@ -206,10 +199,8 @@ void MyMesh::drawGL()
 {
     glPushMatrix();
     
-    //if(_instancerTransforms.size() == 0)
-    //glMultMatrixf( _transform.data() );
-
     // constant color for the whole mesh
+    glColor3f(0.18f, 0.18f, 0.18f);
     if (_displayColors.size() == 1)
     {
         auto& c = _displayColors[0];
