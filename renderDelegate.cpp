@@ -11,7 +11,7 @@
 
 #include <iostream>
 
-#include <gl/GL.h>
+#include "glad.h"
 
 std::mutex MyRenderDelegate::_mutexResourceRegistry;
 std::atomic_int MyRenderDelegate::_counterResourceRegistry;
@@ -60,8 +60,7 @@ MyRenderDelegate::MyRenderDelegate(
 
 void MyRenderDelegate::_Initialize()
 {
-    // initialize your context here if you need to
-    //gladLoadGL();
+    gladLoadGL();
 
     std::lock_guard<std::mutex> guard(_mutexResourceRegistry);
     if (_counterResourceRegistry.fetch_add(1) == 0) {

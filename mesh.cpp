@@ -170,7 +170,7 @@ MyMesh::_PopulateMesh(pxr::HdSceneDelegate* sceneDelegate,
         auto& normals = sceneDelegate->Get(id, pxr::HdTokens->normals).Get<pxr::VtVec3fArray>();
         pxr::Hd_VertexAdjacency _adjacency;
         _adjacency.BuildAdjacencyTable(&_topology);
-        auto _computedNormals = pxr::Hd_SmoothNormals::ComputeSmoothNormals(&_adjacency, _points.size(), _points.cdata());
+        _computedNormals = pxr::Hd_SmoothNormals::ComputeSmoothNormals(&_adjacency, _points.size(), _points.cdata());
 
         std::lock_guard<std::mutex> guard(_owner->rendererMutex());
         _owner->addMesh(id, this);
@@ -204,7 +204,7 @@ void MyMesh::drawGL()
     if (_displayColors.size() == 1)
     {
         auto& c = _displayColors[0];
-        glColor3f(c.data()[0], c.data()[1], c.data()[2]);
+        glColor3fv(c.data());
     }
 
     size_t instances = pxr::GfMax(size_t(1), _instancerTransforms.size());
@@ -227,9 +227,15 @@ void MyMesh::drawGL()
                 {
                     // per-vertex color
                     auto& c = _displayColors[_triangulatedIndices[i][ti]];
-                    glColor3f(c.data()[0], c.data()[1], c.data()[2]);
+                    glColor3fv(c.data());
                 }
-                glVertex3f(p.data()[0], p.data()[1], p.data()[2]);
+                if (_computedNormals.size() == _points.size())
+                {
+                    // per-vertex normal
+                    auto& n = _computedNormals[_triangulatedIndices[i][ti]];
+                    glNormal3fv(n.data());
+                }
+                glVertex3fv(p.data());
             }
         }
         glEnd();

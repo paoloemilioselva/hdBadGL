@@ -28,6 +28,8 @@ add_library( ${DELEGATE_NAME} SHARED
     camera.h
     instancer.cpp
     instancer.h
+    glad.c
+    glad.h
 )
 
 target_link_libraries(
@@ -40,10 +42,8 @@ target_link_libraries(
 target_compile_options(
         ${DELEGATE_NAME}
         PRIVATE
-        $<$<CXX_COMPILER_ID:MSVC>:/W4 /wd4273 /Zi /experimental:external /external:W0>
+        $<$<CXX_COMPILER_ID:MSVC>:/W4 /wd4273 /Zi /experimental:external /external:W0 /D>
         $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<CONFIG:RelWithDebInfo>>:/Ob0 /Od>
-        $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -pedantic -Wno-deprecated -Wshadow -Wdouble-promotion -Wconversion -Wnull-dereference -Wold-style-cast -Wuseless-cast>
-        $<$<AND:$<CXX_COMPILER_ID:GNU>,$<CONFIG:Debug>>:-g3>
         )
 
 target_link_options(

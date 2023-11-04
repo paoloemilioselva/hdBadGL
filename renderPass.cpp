@@ -13,8 +13,6 @@
 #include <iostream>
 #include <bitset>
 
-#include <gl/gl.h>
-
 MyRenderPass::MyRenderPass(
     pxr::HdRenderIndex* index, 
     pxr::HdRprimCollection const& collection,
@@ -147,16 +145,12 @@ void MyRenderPass::_Execute(
     else
     {
         // get from _owner->GetRenderSettings...
-
     }
-    //auto* hdCamera = static_cast<const MyCamera*>(
-    //    GetRenderIndex()->GetSprim(pxr::HdPrimTypeTokens->camera, hdCameraPath));
-    
-    // update camera view
+    auto* hdCamera = static_cast<const MyCamera*>(
+        GetRenderIndex()->GetSprim(pxr::HdPrimTypeTokens->camera, hdCameraPath));
     // Do we need to get the sampleXform param here instead ?
-    //auto& passMatrix = hdCamera->GetTransform();
+    auto& passMatrix = hdCamera->GetTransform();
 
-    // update your camera-matrix here...
     glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
     glPushAttrib(GL_ALL_ATTRIB_BITS);
     glPushMatrix();
@@ -164,7 +158,8 @@ void MyRenderPass::_Execute(
     glDisable(GL_BLEND);
     glDisable(GL_LIGHTING);
     glDepthFunc(GL_LESS);
-    glClear(GL_DEPTH_BUFFER_BIT);
+    glClearColor(0.0,0.0,0.0,0.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -173,8 +168,56 @@ void MyRenderPass::_Execute(
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
+    if (_shaderProgram == 0)
+    {
+        GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
+        GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
+        const char* vertSource = 
+            "varying vec3 normal;"
+            "varying vec3 position;"
+            "void main() {"
+            "    gl_FrontColor = gl_Color;"
+            "    normal = gl_NormalMatrix * gl_Normal;"
+            "    position = gl_ModelViewMatrix * gl_Vertex;"
+            "    gl_Position = ftransform();"
+            "}";
+        const char* fragSource =
+            "varying vec3 normal;"
+            "varying vec3 position;"
+            "void main() {"
+            "    vec3 nn = normalize(normal);"
+            "    vec3 light_pos = gl_LightSource[0].position;"
+            "    vec3 light_dir = normalize(position - light_pos);"
+            "    vec3 eye_dir = normalize(-position);"
+            "    float NdotE = dot(nn,eye_dir);"
+            "    vec3 reflect_dir = normalize(reflect(light_dir, nn));"
+            "    float spec = max(dot(reflect_dir, eye_dir), 0.0);"
+            "    float diffuse = max(dot(-light_dir, nn), 0.0);"
+            "    float intensity = 0.4 * diffuse + 0.6 * spec;"
+            "    if (intensity < 0.1) intensity = 0.0;"
+            "    else if (intensity < 0.5) intensity = 0.5;"
+            "    else if (intensity < 0.7) intensity = 0.7;"
+            "    else intensity = 1.1;"
+            "    gl_FragColor = gl_Color * intensity;"
+            "}";
+        glShaderSource(vertShader, 1, &vertSource, 0);
+        glShaderSource(fragShader, 1, &fragSource, 0);
+        glCompileShader(vertShader);
+        glCompileShader(fragShader);
+        _shaderProgram = glCreateProgram();
+        glAttachShader(_shaderProgram, vertShader);
+        glAttachShader(_shaderProgram, fragShader);
+        glLinkProgram(_shaderProgram);
+    }
+    glUseProgram(_shaderProgram);
+
+    GLfloat light_position[] = { passMatrix.GetRow3(3).data()[0], passMatrix.GetRow3(3).data()[1], passMatrix.GetRow3(3).data()[2] };
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
     // ...update/draw your scene
     bool needsRestart = _owner->UpdateScene();
+
+    glUseProgram(0);
 
     glPopMatrix();
     glPopAttrib();

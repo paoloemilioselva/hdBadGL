@@ -11,6 +11,8 @@
 #include "renderBuffer.h"
 #include "renderDelegate.h"
 
+#include "glad.h"
+
 class MyRenderPass final : public pxr::HdRenderPass
 {
 public:
@@ -40,6 +42,9 @@ private:
     pxr::GfMatrix4d _projMatrix;
     MyRenderBuffer _colorBuffer;
     pxr::HdRenderThread* _renderThread;
+
+    GLuint _shaderProgram;
+    GLuint _gBuffer;
 };
 
 #endif
