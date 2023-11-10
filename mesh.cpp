@@ -167,7 +167,6 @@ MyMesh::_PopulateMesh(pxr::HdSceneDelegate* sceneDelegate,
 
         // Get normals (smooth them for now)
         //
-        auto& normals = sceneDelegate->Get(id, pxr::HdTokens->normals).Get<pxr::VtVec3fArray>();
         pxr::Hd_VertexAdjacency _adjacency;
         _adjacency.BuildAdjacencyTable(&_topology);
         _computedNormals = pxr::Hd_SmoothNormals::ComputeSmoothNormals(&_adjacency, _points.size(), _points.cdata());
@@ -204,7 +203,7 @@ void MyMesh::drawGL()
     if (_displayColors.size() == 1)
     {
         auto& c = _displayColors[0];
-        glColor3fv(c.data());
+        glColor4f(c.data()[0],c.data()[1],c.data()[2],1.0f);
     }
 
     size_t instances = pxr::GfMax(size_t(1), _instancerTransforms.size());
@@ -227,7 +226,7 @@ void MyMesh::drawGL()
                 {
                     // per-vertex color
                     auto& c = _displayColors[_triangulatedIndices[i][ti]];
-                    glColor3fv(c.data());
+                    glColor4f(c.data()[0], c.data()[1], c.data()[2], 1.0f);
                 }
                 if (_computedNormals.size() == _points.size())
                 {

@@ -175,44 +175,49 @@ void MyRenderPass::_Execute(
         const char* vertSource = 
             "varying vec3 normal;"
             "varying vec3 position;"
+            "varying vec3 camPos;"
             "void main() {"
+            "    camPos = vec3(10.0,10.0,10.0);"
             "    gl_FrontColor = gl_Color;"
-            "    normal = gl_NormalMatrix * gl_Normal;"
+            "    normal = normalize(mat3(gl_ModelViewMatrix) * gl_Normal);"
             "    position = gl_ModelViewMatrix * gl_Vertex;"
             "    gl_Position = ftransform();"
             "}";
         const char* fragSource =
             "varying vec3 normal;"
             "varying vec3 position;"
+            "varying vec3 camPos;"
             "void main() {"
-            "    vec3 nn = normalize(normal);"
-            "    vec3 light_pos = gl_LightSource[0].position;"
-            "    vec3 light_dir = normalize(position - light_pos);"
-            "    vec3 eye_dir = normalize(-position);"
-            "    float NdotE = dot(nn,eye_dir);"
-            "    vec3 reflect_dir = normalize(reflect(light_dir, nn));"
-            "    float spec = max(dot(reflect_dir, eye_dir), 0.0);"
-            "    float diffuse = max(dot(-light_dir, nn), 0.0);"
-            "    float intensity = 0.4 * diffuse + 0.6 * spec;"
-            "    if (intensity < 0.1) intensity = 0.0;"
-            "    else if (intensity < 0.5) intensity = 0.5;"
-            "    else if (intensity < 0.7) intensity = 0.7;"
-            "    else intensity = 1.1;"
-            "    gl_FragColor = gl_Color * intensity;"
+            "    float darkMask = 1.0-smoothstep(0.1,0.11,normalize(dot(normal,camPos)));"
+            "    float brightMask = smoothstep(0.9,0.91,dot(reflect(-camPos,normal),camPos));"
+            "    float baseMask = 1.0 - darkMask - brightMask;"
+            "    vec4 darkColor = gl_Color*0.5;"
+            "    vec4 brightColor = gl_Color+vec4(0.5,0.5,0.5,0.0);"
+            "    float outline = 1.0-smoothstep(0.8,0.81,1.0-normal.z);"
+            "    gl_FragColor = (darkColor*darkMask + gl_Color*baseMask + brightColor*brightMask) * outline;"
             "}";
         glShaderSource(vertShader, 1, &vertSource, 0);
         glShaderSource(fragShader, 1, &fragSource, 0);
         glCompileShader(vertShader);
         glCompileShader(fragShader);
+
+        GLint isCompiled = 0;
+        glGetShaderiv(fragShader, GL_COMPILE_STATUS, &isCompiled);
+        if (isCompiled == GL_FALSE)
+        {
+            GLint maxLength = 0;
+            glGetShaderiv(fragShader, GL_INFO_LOG_LENGTH, &maxLength);
+            std::vector<GLchar> errorLog(maxLength);
+            glGetShaderInfoLog(fragShader, maxLength, &maxLength, &errorLog[0]);
+            std::cout << "COMPILATION ERROR: " <<  &errorLog[0] << std::endl;
+        }
+
         _shaderProgram = glCreateProgram();
         glAttachShader(_shaderProgram, vertShader);
         glAttachShader(_shaderProgram, fragShader);
         glLinkProgram(_shaderProgram);
     }
     glUseProgram(_shaderProgram);
-
-    GLfloat light_position[] = { passMatrix.GetRow3(3).data()[0], passMatrix.GetRow3(3).data()[1], passMatrix.GetRow3(3).data()[2] };
-    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 
     // ...update/draw your scene
     bool needsRestart = _owner->UpdateScene();

@@ -40,15 +40,15 @@ endforeach()
 find_library(
     _houdini_python_lib
     NAMES
-    python39
+    python${HOUDINI_PYTHON_VERSION}
     PATHS
-    ${HOUDINI_ROOT}/python39/libs
+    ${HOUDINI_ROOT}/python${HOUDINI_PYTHON_VERSION}/libs
     REQUIRED
     )
 
 find_library(_houdini_hboost_python
         NAMES
-        hboost_python39-mt-x64
+        hboost_python${HOUDINI_PYTHON_VERSION}-mt-x64
         PATHS
         ${HOUDINI_ROOT}/dsolib
         ${HOUDINI_ROOT}/custom/houdini/dsolib/

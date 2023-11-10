@@ -30,7 +30,11 @@ void BadGLPlugin::DeleteRenderDelegate(pxr::HdRenderDelegate* renderDelegate)
     delete renderDelegate;
 }
 
+#if PXR_VERSION > 2205
+bool BadGLPlugin::IsSupported(bool glEnabled) const
+#else
 bool BadGLPlugin::IsSupported() const 
+#endif
 {
     return true;
 }
