@@ -24,6 +24,7 @@ MyMesh::MyMesh(const pxr::SdfPath& id, MyRenderDelegate* delegate)
     , _normalsValid(false)
     , _refined(false)
     , _smoothNormals(false)
+    , _dataSharingId()
     , _owner(delegate)
 {
 }
@@ -32,6 +33,7 @@ MyMesh::~MyMesh()
 {
     std::lock_guard<std::mutex> guard(_owner->rendererMutex());
     _owner->removeMesh(GetId());
+    _owner->removeDataSharingId(_dataSharingId);
     _instancerTransforms.clear();
 }
 
@@ -173,6 +175,10 @@ MyMesh::_PopulateMesh(pxr::HdSceneDelegate* sceneDelegate,
 
         std::lock_guard<std::mutex> guard(_owner->rendererMutex());
         _owner->addMesh(id, this);
+
+        _dataSharingId = sceneDelegate->GetDataSharingId(GetId());
+        _owner->addDataSharingId(_dataSharingId);
+        
     }
 
     if (pxr::HdChangeTracker::IsTransformDirty(*dirtyBits, id))

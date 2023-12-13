@@ -10,12 +10,16 @@ if(NOT TARGET_CONFIG)
     #set( TARGET_CONFIG "houdini-20.0-506-310")
     #set( TARGET_CONFIG "usd-23.08")
 endif()
+
 string(REPLACE "-" ";" _t_config ${TARGET_CONFIG})
 list(LENGTH _t_config _t_config_length)
+
 if(_t_config_length LESS 2)
     MESSAGE(FATAL_ERROR "Wrong TARGET_CONFIG value " ${TARGET_CONFIG} )
 endif()
+
 list(GET _t_config 0 _target_name )
+
 if( _target_name MATCHES "houdini" )
     list(GET _t_config 1 HOUDINI_MAJ_MIN )
     list(GET _t_config 2 HOUDINI_PATCH )
@@ -28,13 +32,34 @@ if( _target_name MATCHES "houdini" )
     MESSAGE(STATUS "HOUDINI_ROOT = " ${HOUDINI_ROOT} )
     MESSAGE(STATUS "HOUDINI_ROOT_USER = " ${HOUDINI_ROOT_USER} )
     MESSAGE(STATUS "HOUDINI_PYTHON_VERSION = " ${HOUDINI_PYTHON_VERSION} )
+
 elseif( _target_name MATCHES "usd" )
+    list(GET _t_config 1 USD_VERSION )
+    set(USD_ROOT "C:\\dev\\pixar\\usd-${USD_VERSION}" )
+    set(TBB_ROOT_DIR ${USD_ROOT} )
+    set(BOOST_ROOT "${USD_ROOT}\\include\\boost-1_78" )
     MESSAGE(STATUS "Building for OpenUSD" )
+    MESSAGE(STATUS "USD_VERSION = " ${USD_VERSION} )
+    MESSAGE(STATUS "USD_ROOT = " ${USD_ROOT} )
+    MESSAGE(STATUS "TBB_ROOT_DIR = " ${TBB_ROOT_DIR} )
+    MESSAGE(STATUS "BOOST_ROOT = " ${BOOST_ROOT} )
+    
+    set(Python_ADDITIONAL_VERSIONS 3.11)
+    find_package(Python EXACT 3.11 COMPONENTS Interpreter Development)
+    include_directories( ${Python_INCLUDE_DIRS} )
+    message(STATUS "Python_FOUND:${Python_FOUND}")
+    message(STATUS "Python_VERSION:${Python_VERSION}")
+    message(STATUS "Python_Development_FOUND:${Python_Development_FOUND}")
+    message(STATUS "Python_LIBRARIES:${Python_LIBRARIES}")
+
+
 else()
     MESSAGE(FATAL_ERROR "Invalid target " ${_target_name})
 endif()
 
 include(cmake/FindUsd.cmake)
+
+MESSAGE(STATUS "Usd::Usd = " ${UsdInterface} )
 
 add_library( ${DELEGATE_NAME} SHARED
     rendererPlugin.cpp

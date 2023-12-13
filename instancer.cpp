@@ -1,8 +1,10 @@
 
 #include "instancer.h"
+#include "renderDelegate.h"
 
-MyInstancer::MyInstancer(pxr::HdSceneDelegate* delegate, pxr::SdfPath const& id) :
-    pxr::HdInstancer(delegate, id)
+MyInstancer::MyInstancer(pxr::HdSceneDelegate* delegate, pxr::SdfPath const& id, MyRenderDelegate* renderDelegate) :
+    pxr::HdInstancer(delegate, id),
+    _owner(renderDelegate)
 {
 }
 
@@ -13,13 +15,20 @@ MyInstancer::~MyInstancer()
         delete it->second;
     }
     _primvarMap.clear();
+
+    std::lock_guard<std::mutex> guard(_owner->rendererMutex());
+    _owner->removeInstancer(GetId());
 }
 
 void MyInstancer::Sync(
     pxr::HdSceneDelegate* delegate, pxr::HdRenderParam* /*renderParam*/, pxr::HdDirtyBits* dirtyBits)
 {
+    std::lock_guard<std::mutex> guard(_owner->rendererMutex());
+    _owner->addInstancerId(GetId());
+
     _UpdateInstancer(delegate, dirtyBits);
     _SyncPrimvars(dirtyBits);
+
 }
 
 void MyInstancer::_SyncPrimvars(pxr::HdDirtyBits* dirtyBits)

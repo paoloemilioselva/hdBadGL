@@ -43,8 +43,10 @@ private:
     MyRenderBuffer _colorBuffer;
     pxr::HdRenderThread* _renderThread;
 
+    bool shaderCreated;
     GLuint _shaderProgram;
     GLuint _gBuffer;
+    GLuint _frameBuffer;
 };
 
 #endif

@@ -82,7 +82,8 @@ public:
     ///   \return True if the buffer is converged (not currently being
     ///           rendered to).
     bool IsConverged() const override {
-        return _converged.load();
+        //return _converged.load();
+        return true;
     }
 
     /// Set the convergence.

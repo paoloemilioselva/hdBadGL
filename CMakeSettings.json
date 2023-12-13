@@ -13,6 +13,18 @@
       "variables": []
     },
     {
+      "name": "Release-USD-23.08",
+      "generator": "Ninja",
+      "configurationType": "Release",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "-DTARGET_CONFIG=usd-23.08",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": "",
+      "variables": []
+    },
+    {
       "name": "Release-Houdini-20",
       "generator": "Ninja",
       "configurationType": "Release",

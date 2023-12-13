@@ -7,6 +7,7 @@
 #include <pxr/imaging/hd/vtBufferSource.h>
 #include <pxr/base/gf/matrix4f.h>
 #include <pxr/imaging/hd/meshUtil.h>
+#include <pxr/imaging/hd/sceneDelegate.h>
 #include <pxr/pxr.h>
 
 class MyRenderDelegate;
@@ -28,6 +29,10 @@ public:
     virtual void Finalize(pxr::HdRenderParam* renderParam) override;
 
     void drawGL();
+
+    size_t numInstances() { return _instancerTransforms.size(); }
+
+    pxr::GfMatrix4f& getTransform() { return _transform; }
 
 protected:
     virtual void _InitRepr(pxr::TfToken const& reprToken,
@@ -62,6 +67,8 @@ private:
 
     MyMesh(const MyMesh&) = delete;
     MyMesh& operator =(const MyMesh&) = delete;
+
+    pxr::SdfPath _dataSharingId;
 
     MyRenderDelegate* _owner;
 };

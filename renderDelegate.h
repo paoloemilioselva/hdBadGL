@@ -6,6 +6,7 @@
 #include <pxr/imaging/hd/resourceRegistry.h>
 #include <pxr/imaging/hd/renderThread.h>
 #include <pxr/base/tf/staticTokens.h>
+#include <pxr/base/gf/vec2f.h>
 
 #include <map>
 
@@ -69,8 +70,44 @@ public:
             _myMeshes.erase(i_path);
     }
 
+    void addDataSharingId(const pxr::SdfPath& i_path)
+    {
+        _dataSharingIds.insert(i_path);
+    }
+    void removeDataSharingId(const pxr::SdfPath& i_path)
+    {
+        if (_dataSharingIds.find(i_path) != _dataSharingIds.end())
+            _dataSharingIds.erase(i_path);
+    }
+
+    void addInstancerId(const pxr::SdfPath& i_path)
+    {
+        _instancerIds.insert(i_path);
+    }
+    void removeInstancer(const pxr::SdfPath& i_path)
+    {
+        if (_instancerIds.find(i_path) != _instancerIds.end())
+            _instancerIds.erase(i_path);
+    }
 
     pxr::VtDictionary GetRenderStats() const;
+
+
+    bool ValidPixels(int w, int h) 
+    {
+        if (_pixelsData == nullptr || w != _pixelsWidth || h != _pixelsHeight)
+            return false;
+        return true;
+    }
+    float* GetPixels() { return _pixelsData; }
+    void ResetPixels( int w, int h ) 
+    {
+        if (_pixelsData != nullptr)
+            delete[] _pixelsData;
+        _pixelsWidth = w;
+        _pixelsHeight = h;
+        _pixelsData = new float[_pixelsWidth * _pixelsHeight * 4];
+    }
 
 private:
     void _Initialize();
@@ -86,11 +123,20 @@ private:
     std::mutex _rendererMutex;
     std::mutex _primIndexMutex;
 
+    static float* _pixelsData;
+    static int _pixelsWidth;
+    static int _pixelsHeight;
+
     std::map<pxr::TfToken, UpdateRenderSettingFunction> _settingFunctions;
 
     static std::map<pxr::SdfPath, MyMesh*> _myMeshes;
 
+    static std::set<pxr::SdfPath> _dataSharingIds;
+    static std::set<pxr::SdfPath> _instancerIds;
+
     pxr::HdRenderThread _renderThread;
+
+    mutable size_t _currentStatsTime;
 };
 
 #endif

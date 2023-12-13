@@ -13,10 +13,12 @@
 #include <pxr/base/gf/vec4f.h>
 #include <pxr/imaging/hd/vtBufferSource.h>
 
+class MyRenderDelegate;
+
 class MyInstancer : public pxr::HdInstancer
 {
 public:
-    MyInstancer(pxr::HdSceneDelegate* delegate, pxr::SdfPath const& id);
+    MyInstancer(pxr::HdSceneDelegate* delegate, pxr::SdfPath const& id, MyRenderDelegate* renderDelegate);
     ~MyInstancer();
 
     void Sync(pxr::HdSceneDelegate* sceneDelegate, pxr::HdRenderParam* renderParam, pxr::HdDirtyBits* dirtyBits) override;
@@ -29,6 +31,9 @@ private:
     pxr::HdTimeSampleArray< pxr::VtMatrix4dArray, 16 > _sampleXforms;
 
     pxr::TfHashMap<pxr::TfToken, pxr::HdVtBufferSource*, pxr::TfToken::HashFunctor> _primvarMap;
+
+    MyRenderDelegate* _owner;
+
 };
 
 #endif
