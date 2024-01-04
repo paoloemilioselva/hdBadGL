@@ -1,0 +1,22 @@
+{
+  "Plugins": [
+    {
+      "Info": {
+        "Types": {
+          "BadGLPlugin": {
+            "bases": [
+              "HdRendererPlugin"
+            ],
+            "displayName": "BadGL",
+            "priority": 99
+          }
+        }
+      },
+      "LibraryPath": "../hdBadGL.dll",
+      "Name": "hdBadGL",
+      "Type": "library",
+      "ResourcePath": "resources",
+      "Root": ".."
+    }
+  ]
+}

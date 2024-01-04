@@ -1,3 +1,14 @@
+set( HOUDINI_ROOT_USER "C:\\Users\\$ENV{USERNAME}\\Documents\\houdini${HOUDINI_MAJ_MIN}" )
+
+MESSAGE(STATUS "HOUDINI_VERSION = " ${HOUDINI_VERSION} )
+MESSAGE(STATUS "HOUDINI_ROOT = " ${HOUDINI_ROOT} )
+MESSAGE(STATUS "HOUDINI_ROOT_USER = " ${HOUDINI_ROOT_USER} )
+MESSAGE(STATUS "HOUDINI_PYTHON_VERSION = " ${HOUDINI_PYTHON_VERSION} )
+
+# Usd interface
+add_library(UsdInterface INTERFACE)
+add_library(Usd::Usd ALIAS UsdInterface)
+
 find_package(Houdini REQUIRED PATHS ${HOUDINI_ROOT}/toolkit/cmake)
 target_link_libraries(UsdInterface INTERFACE Houdini)
 
@@ -109,3 +120,8 @@ if (NOT USD_SCHEMA_GENERATOR)
         set(USD_SCHEMA_GENERATOR ${USD_SCHEMA_GENERATOR} CACHE STRING "" FORCE)
     endif()
 endif()
+
+
+set(USD_LIBS 
+    Usd::Usd
+)

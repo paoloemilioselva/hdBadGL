@@ -1,7 +1,3 @@
-# Usd interface
-add_library(UsdInterface INTERFACE)
-add_library(Usd::Usd ALIAS UsdInterface)
-
 if(DEFINED USD_ROOT)
     message(STATUS "Using Pixar USD: ${USD_ROOT}")
     include(cmake/FindPixarUsd.cmake)

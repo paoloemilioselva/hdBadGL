@@ -1,24 +1,35 @@
 cmake_minimum_required(VERSION 3.23)
 
-project( BadGL )
-set( DELEGATE_NAME hdBadGL )
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set(TARGET "hdBadGL")
+add_definitions(-DNOMINMAX)
+add_definitions(-DTBB_USE_DEBUG)
+
+project( 
+    ${TARGET}
+    LANGUAGES CXX C
+)
+set( DELEGATE_NAME ${TARGET} )
 
 find_package( OpenGL REQUIRED )
 
+# check target config
 if(NOT TARGET_CONFIG)
-    set( TARGET_CONFIG "houdini-19.5-773-39")
-    #set( TARGET_CONFIG "houdini-20.0-506-310")
-    #set( TARGET_CONFIG "usd-23.08")
+    set( TARGET_CONFIG "usd-23.11")
 endif()
 
 string(REPLACE "-" ";" _t_config ${TARGET_CONFIG})
 list(LENGTH _t_config _t_config_length)
-
 if(_t_config_length LESS 2)
     MESSAGE(FATAL_ERROR "Wrong TARGET_CONFIG value " ${TARGET_CONFIG} )
 endif()
 
 list(GET _t_config 0 _target_name )
+
+set( USD_LIBS "" )
+set( USD_EMBEDDED FALSE )
 
 if( _target_name MATCHES "houdini" )
     list(GET _t_config 1 HOUDINI_MAJ_MIN )
@@ -26,32 +37,17 @@ if( _target_name MATCHES "houdini" )
     list(GET _t_config 3 HOUDINI_PYTHON_VERSION )
     set( HOUDINI_VERSION "Houdini ${HOUDINI_MAJ_MIN}.${HOUDINI_PATCH}" )
     set( HOUDINI_ROOT "C:\\Program Files\\Side Effects Software\\${HOUDINI_VERSION}" )
-    set( HOUDINI_ROOT_USER "C:\\Users\\$ENV{USERNAME}\\Documents\\houdini${HOUDINI_MAJ_MIN}" )
-    MESSAGE(STATUS "Building for Houdini" )
-    MESSAGE(STATUS "HOUDINI_VERSION = " ${HOUDINI_VERSION} )
-    MESSAGE(STATUS "HOUDINI_ROOT = " ${HOUDINI_ROOT} )
-    MESSAGE(STATUS "HOUDINI_ROOT_USER = " ${HOUDINI_ROOT_USER} )
-    MESSAGE(STATUS "HOUDINI_PYTHON_VERSION = " ${HOUDINI_PYTHON_VERSION} )
 
 elseif( _target_name MATCHES "usd" )
     list(GET _t_config 1 USD_VERSION )
-    set(USD_ROOT "C:\\dev\\pixar\\usd-${USD_VERSION}" )
-    set(TBB_ROOT_DIR ${USD_ROOT} )
-    set(BOOST_ROOT "${USD_ROOT}\\include\\boost-1_78" )
-    MESSAGE(STATUS "Building for OpenUSD" )
-    MESSAGE(STATUS "USD_VERSION = " ${USD_VERSION} )
-    MESSAGE(STATUS "USD_ROOT = " ${USD_ROOT} )
-    MESSAGE(STATUS "TBB_ROOT_DIR = " ${TBB_ROOT_DIR} )
-    MESSAGE(STATUS "BOOST_ROOT = " ${BOOST_ROOT} )
-    
-    set(Python_ADDITIONAL_VERSIONS 3.11)
-    find_package(Python EXACT 3.11 COMPONENTS Interpreter Development)
-    include_directories( ${Python_INCLUDE_DIRS} )
-    message(STATUS "Python_FOUND:${Python_FOUND}")
-    message(STATUS "Python_VERSION:${Python_VERSION}")
-    message(STATUS "Python_Development_FOUND:${Python_Development_FOUND}")
-    message(STATUS "Python_LIBRARIES:${Python_LIBRARIES}")
-
+    set(USD_ROOT "C:\\dev\\usd-${USD_VERSION}" )
+    set(USD_ROOT_FOR_BATCH ${USD_ROOT})
+    if( USD_EMBEDDED )
+        set(USD_ROOT_FOR_BATCH .\\usd-${USD_VERSION})
+    endif()
+    if(_t_config_length EQUAL 3)
+        set( USD_EMBEDDED TRUE )
+    endif()
 
 else()
     MESSAGE(FATAL_ERROR "Invalid target " ${_target_name})
@@ -59,7 +55,13 @@ endif()
 
 include(cmake/FindUsd.cmake)
 
-MESSAGE(STATUS "Usd::Usd = " ${UsdInterface} )
+include(cmake/FindTBB.cmake)
+
+# Add GLFW
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+add_subdirectory( "../glfw" "../glfw" )
 
 add_library( ${DELEGATE_NAME} SHARED
     rendererPlugin.cpp
@@ -80,31 +82,50 @@ add_library( ${DELEGATE_NAME} SHARED
     glad.h
 )
 
+target_compile_options( 
+    ${DELEGATE_NAME}
+    PRIVATE
+    $<$<CXX_COMPILER_ID:MSVC>:/W3 /O2 /wd4273 /Zi /experimental:external /external:W0>
+    $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<CONFIG:RelWithDebInfo>>:/Ob0 /Od> 
+)
+
+target_link_options( 
+    ${DELEGATE_NAME}
+    PRIVATE
+    $<$<CXX_COMPILER_ID:MSVC>:/ignore:4217 /ignore:4049> 
+)
+
+target_link_directories( 
+    ${DELEGATE_NAME}
+    PRIVATE 
+    ${USD_LIBRARY_DIR}
+)
+
+#set_property(TARGET ${DELEGATE_NAME} PROPERTY IMPORTED_LOCATION ${Python_LIBRARIES})
+
 target_link_libraries(
-        ${DELEGATE_NAME}
-        PUBLIC
-        Usd::Usd
-        OpenGL::GL
-        )
+    ${DELEGATE_NAME}
+    PUBLIC
+    OpenGL::GL
+    glfw
+    ${USD_LIBS}
+)
 
-target_compile_options(
-        ${DELEGATE_NAME}
-        PRIVATE
-        $<$<CXX_COMPILER_ID:MSVC>:/W4 /wd4273 /Zi /experimental:external /external:W0 /D> 
-        $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<CONFIG:RelWithDebInfo>>:/Ob0 /Od>
-        )
 
-target_link_options(
-        ${DELEGATE_NAME}
-        PRIVATE
-        $<$<CXX_COMPILER_ID:MSVC>:/ignore:4217 /ignore:4049> 
-        )
+set(_installation_folder "")
+if( _target_name MATCHES "houdini" )
+    set(_installation_folder ${HOUDINI_ROOT_USER}/${DELEGATE_NAME})
+    configure_file(houdini-extra/plugInfo.json plugInfo.json @ONLY)
+    configure_file(houdini-extra/UsdRenderers.json UsdRenderers.json @ONLY)
+    configure_file(houdini-extra/${DELEGATE_NAME}.json ${DELEGATE_NAME}.json @ONLY)
+    install(TARGETS ${DELEGATE_NAME} DESTINATION ${_installation_folder}/dso/usd_plugins)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/houdini-extra/${DELEGATE_NAME}.json DESTINATION ${HOUDINI_ROOT_USER}/packages)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/houdini-extra/UsdRenderers.json DESTINATION $_installation_folder})
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/houdini-extra/plugInfo.json DESTINATION ${_installation_folder}/dso/usd_plugins)
 
-configure_file(plugInfo.json plugInfo.json @ONLY)
-configure_file(UsdRenderers.json UsdRenderers.json @ONLY)
-configure_file(${DELEGATE_NAME}.json ${DELEGATE_NAME}.json @ONLY)
+elseif( _target_name MATCHES "usd" )
+    set(_installation_folder bin)
+    install(TARGETS ${DELEGATE_NAME} RUNTIME DESTINATION ${_installation_folder}/usd-extra/plugin/usd)
+    install(FILES ${CMAKE_SOURCE_DIR}/usd-extra/plugInfo.json DESTINATION ${_installation_folder}/usd-extra/plugin/usd/${DELEGATE_NAME}/resources )
 
-install(TARGETS ${DELEGATE_NAME} DESTINATION ${HOUDINI_ROOT_USER}/${DELEGATE_NAME}/dso/usd_plugins)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${DELEGATE_NAME}.json DESTINATION ${HOUDINI_ROOT_USER}/packages)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/UsdRenderers.json DESTINATION ${HOUDINI_ROOT_USER}/${DELEGATE_NAME})
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/plugInfo.json DESTINATION ${HOUDINI_ROOT_USER}/${DELEGATE_NAME}/dso/usd_plugins)
+endif()

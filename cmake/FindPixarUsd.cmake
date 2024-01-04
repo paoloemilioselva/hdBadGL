@@ -1,72 +1,82 @@
+set(TBB_ROOT_DIR ${USD_ROOT} )
+set(BOOST_FROM_USD 1_78)
+set(BOOST_ROOT "${USD_ROOT}/include/boost-${BOOST_FROM_USD}" )
+MESSAGE(STATUS "USD_VERSION = " ${USD_VERSION} )
+MESSAGE(STATUS "USD_ROOT = " ${USD_ROOT} )
+MESSAGE(STATUS "TBB_ROOT_DIR = " ${TBB_ROOT_DIR} )
+MESSAGE(STATUS "BOOST_ROOT = " ${BOOST_ROOT} )
+    
+set(Python_ADDITIONAL_VERSIONS 3.11)
+find_package(Python EXACT 3.11 COMPONENTS Interpreter Development)
+include_directories( ${Python_INCLUDE_DIRS} )
+message(STATUS "Python_FOUND:${Python_FOUND}")
+message(STATUS "Python_VERSION:${Python_VERSION}")
+message(STATUS "Python_Development_FOUND:${Python_Development_FOUND}")
+message(STATUS "Python_INCLUDE_DIRS:${Python_INCLUDE_DIRS}")
+message(STATUS "Python_LIBRARIES:${Python_LIBRARIES}")
 
-set(USD_LIBRARY_MONOLITHIC FALSE)
-
-include_directories( ${BOOST_ROOT} )
 
 get_filename_component(USD_INCLUDE_DIR ${USD_ROOT}/include ABSOLUTE)
 get_filename_component(USD_LIBRARY_DIR ${USD_ROOT}/lib ABSOLUTE)
-get_filename_component(USD_BIN_DIR ${USD_ROOT}/bin ABSOLUTE)
 
-include_directories( ${USD_INCLUDE_DIR} )
+set(USD_LIBRARY_MONOLITHIC FALSE)
 
-set(PXR_LIB_PREFIX "lib")
+set(PXR_LIB_PREFIX "")
 
-#find_package(pxr CONFIG REQUIRED PATHS ${USD_ROOT} )
+include(FindPackageHandleStandardArgs)
 
-target_compile_definitions(UsdInterface
-    INTERFACE
-    BOOST_NS=boost
-    $<$<CXX_COMPILER_ID:MSVC>:HAVE_SNPRINTF>
-    $<$<CXX_COMPILER_ID:GNU>:TBB_USE_DEBUG=0>
-    )
+find_package_handle_standard_args(USD
+    REQUIRED_VARS
+        USD_INCLUDE_DIR
+        USD_LIBRARY_DIR
+    VERSION_VAR
+        USD_VERSION
+)
 
-# Usd
-set(_pxr_libs usd_ar;usd_arch;usd_cameraUtil;usd_garch;usd_gf;usd_glf;usd_hd;usd_hdSt;usd_hdx;usd_hf;usd_hgi;usd_hgiGL;usd_hio;usd_js;usd_kind;usd_ndr;usd_pcp;usd_plug;usd_pxOsd;usd_sdf;usd_sdr;usd_tf;usd_trace;usd_usd;usd_usdHydra;usd_usdImaging;usd_usdImagingGL;usd_usdLux;usd_usdRender;usd_usdShade;usd_usdSkel;usd_usdUtils;usd_usdVol;usd_vt;usd_work;usd_usdGeom)
+find_package(Boost REQUIRED)
+set(boost_version_string "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
+message(STATUS "Boost_VERSION:${Boost_VERSION}") 
+include_directories( ${BOOST_ROOT} )
 
-foreach(_pxr_lib ${_pxr_libs})
-    find_library(${_pxr_lib}_path
-            NAMES
-            ${_pxr_lib}
-            PATHS
-            ${USD_LIBRARY_DIR}
-            REQUIRED
-            )
+set (_usd_libs
+    usd_usdImagingGL
+    usd_usdImaging
+    usd_usdHydra
+    usd_hdx
+    usd_hdSt
+    usd_hd
+    usd_glf
+    usd_garch
+    usd_pxOsd
+    usd_usdRi
+    usd_usdUI
+    usd_usdShade
+    usd_usdGeom
+    usd_usd
+    usd_usdUtils
+    usd_pcp
+    usd_sdf
+    usd_plug
+    usd_js
+    usd_ar
+    usd_work
+    usd_tf
+    usd_kind
+    usd_arch
+    usd_vt
+    usd_gf
+    usd_hf
+    usd_cameraUtil
+    usd_trace
+)
 
-    target_link_libraries(UsdInterface
-            INTERFACE
-            ${${_pxr_lib}_path}
-            )
-endforeach()
+include_directories(
+    ${USD_INCLUDE_DIR}
+)
 
-# Find Usd Schema Generator
-if(USD_GEN_SCHEMA)
-if (NOT USD_SCHEMA_GENERATOR)
-    find_program(USD_SCHEMA_GENERATOR
-            NAMES
-            usdGenSchema
-            usdGenSchema.py
-            PATHS
-            ${USD_BIN_DIR}
-            REQUIRED
-            NO_DEFAULT_PATH
-            )
+set(USD_LIBS 
+    ${Python_LIBRARIES}
+    ${_usd_libs}
+)
 
-    get_filename_component(USD_SCHEMA_GENERATOR_EXT
-            ${USD_SCHEMA_GENERATOR}
-            EXT
-            )
-
-    if("${USD_SCHEMA_GENERATOR_EXT}" STREQUAL ".py")
-        find_program(HYTHON_EXECUTABLE
-                NAMES
-                hython
-                PATHS
-                ${USD_BIN_DIR}
-                REQUIRED
-                NO_DEFAULT_PATH
-                )
-        list(PREPEND USD_SCHEMA_GENERATOR ${HYTHON_EXECUTABLE})
-        set(USD_SCHEMA_GENERATOR ${USD_SCHEMA_GENERATOR} CACHE STRING "" FORCE)
-    endif()
-endif()
-endif()
+message(STATUS "USD_LIBS:${USD_LIBS}")
