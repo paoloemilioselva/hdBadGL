@@ -368,7 +368,7 @@ pxr::VtDictionary MyRenderDelegate::GetRenderStats() const
         }
     }
 
-    bool drawBuffer = true;
+    bool drawBuffer = false;
     if (drawBuffer)
     {
         for (int i = lines.size(); i < height; ++i)
@@ -392,7 +392,7 @@ pxr::VtDictionary MyRenderDelegate::GetRenderStats() const
         }
     }
 
-    int gap = (height+1) - lines.size();
+    int gap = (height) - lines.size();
     for (int i = 0; i < height; ++i)
     {
         if(lines.size()>0 && gap>0 && i>=gap)
