@@ -176,7 +176,9 @@ MyMesh::_PopulateMesh(pxr::HdSceneDelegate* sceneDelegate,
         std::lock_guard<std::mutex> guard(_owner->rendererMutex());
         _owner->addMesh(id, this);
 
+#if 0
         _dataSharingId = sceneDelegate->GetDataSharingId(GetId());
+#endif
         _owner->addDataSharingId(_dataSharingId);
         
     }

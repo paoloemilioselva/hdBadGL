@@ -1,5 +1,7 @@
 set(TBB_ROOT_DIR ${USD_ROOT} )
-set(BOOST_FROM_USD 1_78)
+if(NOT BOOST_FROM_USD)
+    set( BOOST_FROM_USD 1_78)
+endif()
 set(BOOST_ROOT "${USD_ROOT}/include/boost-${BOOST_FROM_USD}" )
 MESSAGE(STATUS "USD_VERSION = " ${USD_VERSION} )
 MESSAGE(STATUS "USD_ROOT = " ${USD_ROOT} )
@@ -67,6 +69,7 @@ set (_usd_libs
     usd_gf
     usd_hf
     usd_cameraUtil
+    usd_usdLux
     usd_trace
 )
 
@@ -75,7 +78,7 @@ include_directories(
 )
 
 set(USD_LIBS 
-    ${Python_LIBRARIES}
+    ${Python_LIBRARIES} 
     ${_usd_libs}
 )
 
