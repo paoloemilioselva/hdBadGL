@@ -8,8 +8,8 @@ MESSAGE(STATUS "USD_ROOT = " ${USD_ROOT} )
 MESSAGE(STATUS "TBB_ROOT_DIR = " ${TBB_ROOT_DIR} )
 MESSAGE(STATUS "BOOST_ROOT = " ${BOOST_ROOT} )
     
-set(Python_ADDITIONAL_VERSIONS 3.11)
-find_package(Python EXACT 3.11 COMPONENTS Interpreter Development)
+set(Python_ADDITIONAL_VERSIONS ${PYTHON_FOR_USD})
+find_package(Python EXACT ${PYTHON_FOR_USD} COMPONENTS Interpreter Development)
 include_directories( ${Python_INCLUDE_DIRS} )
 message(STATUS "Python_FOUND:${Python_FOUND}")
 message(STATUS "Python_VERSION:${Python_VERSION}")
@@ -69,7 +69,6 @@ set (_usd_libs
     usd_gf
     usd_hf
     usd_cameraUtil
-    usd_usdLux
     usd_trace
 )
 
@@ -78,7 +77,7 @@ include_directories(
 )
 
 set(USD_LIBS 
-    ${Python_LIBRARIES} 
+    ${Python_LIBRARIES}
     ${_usd_libs}
 )
 

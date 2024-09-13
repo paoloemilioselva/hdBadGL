@@ -55,6 +55,7 @@ pxr::TfTokenVector const& MyRenderDelegate::GetSupportedBprimTypes() const
 MyRenderDelegate::MyRenderDelegate()
     : HdRenderDelegate()
 {
+    std::cout << __FUNCTION__ << std::endl;
     _Initialize();
 }
 
@@ -62,6 +63,7 @@ MyRenderDelegate::MyRenderDelegate(
     pxr::HdRenderSettingsMap const& settingsMap)
     : HdRenderDelegate(settingsMap), _currentStatsTime(0)
 {
+    std::cout << __FUNCTION__ << std::endl;
     _Initialize();
 }
 
@@ -78,6 +80,7 @@ void MyRenderDelegate::_Initialize()
 
 MyRenderDelegate::~MyRenderDelegate()
 {
+    std::cout << __FUNCTION__ << std::endl;
     std::lock_guard<std::mutex> guard(_mutexResourceRegistry);
     if (_counterResourceRegistry.fetch_sub(1) == 1) {
         _resourceRegistry.reset();

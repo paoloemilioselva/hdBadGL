@@ -106,8 +106,6 @@ pxr::VtMatrix4dArray MyInstancer::ComputeInstanceTransforms(pxr::SdfPath const& 
 
     if (_primvarMap.count(pxr::HdInstancerTokens->instanceTranslations) > 0)
         pBuffer = _primvarMap[pxr::HdInstancerTokens->instanceTranslations];
-    else if (_primvarMap.count(pxr::HdInstancerTokens->translate) > 0)
-        pBuffer = _primvarMap[pxr::HdInstancerTokens->translate];
     if (pBuffer)
     {
         for (size_t i = 0; i < instanceIndices.size(); ++i)
@@ -124,8 +122,6 @@ pxr::VtMatrix4dArray MyInstancer::ComputeInstanceTransforms(pxr::SdfPath const& 
 
     if (_primvarMap.count(pxr::HdInstancerTokens->instanceRotations) > 0)
         pBuffer = _primvarMap[pxr::HdInstancerTokens->instanceRotations];
-    else if (_primvarMap.count(pxr::HdInstancerTokens->rotate) > 0)
-        pBuffer = _primvarMap[pxr::HdInstancerTokens->rotate];
     if (pBuffer)
     {
         for (size_t i = 0; i < instanceIndices.size(); ++i)
@@ -152,8 +148,6 @@ pxr::VtMatrix4dArray MyInstancer::ComputeInstanceTransforms(pxr::SdfPath const& 
 
     if (_primvarMap.count(pxr::HdInstancerTokens->instanceScales) > 0)
         pBuffer = _primvarMap[pxr::HdInstancerTokens->instanceScales];
-    else if (_primvarMap.count(pxr::HdInstancerTokens->scale) > 0)
-        pBuffer = _primvarMap[pxr::HdInstancerTokens->scale];
     if (pBuffer)
     {
         for (size_t i = 0; i < instanceIndices.size(); ++i)
@@ -170,8 +164,6 @@ pxr::VtMatrix4dArray MyInstancer::ComputeInstanceTransforms(pxr::SdfPath const& 
 
     if (_primvarMap.count(pxr::HdInstancerTokens->instanceTransforms) > 0)
         pBuffer = _primvarMap[pxr::HdInstancerTokens->instanceTransforms];
-    else if (_primvarMap.count(pxr::HdInstancerTokens->instanceTransform) > 0)
-        pBuffer = _primvarMap[pxr::HdInstancerTokens->instanceTransform];
     if (pBuffer)
     {
         for (size_t i = 0; i < instanceIndices.size(); ++i)
