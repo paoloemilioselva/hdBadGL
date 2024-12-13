@@ -64,6 +64,7 @@ MyRenderDelegate::MyRenderDelegate(
     : HdRenderDelegate(settingsMap), _currentStatsTime(0)
 {
     std::cout << __FUNCTION__ << std::endl;
+    std::cout << "Husk calls this with all rendersettings" << std::endl;
     _Initialize();
 }
 
@@ -99,6 +100,9 @@ void MyRenderDelegate::CommitResources(pxr::HdChangeTracker* /* tracker */)
 
 void MyRenderDelegate::SetRenderSetting(pxr::TfToken const& key, pxr::VtValue const& value)
 {
+    // husk sends a "husk:snapshot" to the renderer to save a snapshot as
+    // a checkpoint while it is rendering.
+    // it is an opportunity for the delegate to save now.
 }
 
 pxr::VtValue MyRenderDelegate::GetRenderSetting(pxr::TfToken const& key) const
@@ -403,6 +407,18 @@ pxr::VtDictionary MyRenderDelegate::GetRenderStats() const
         else
             stats[pxr::TfToken(std::to_string(i))] = pxr::VtValue(std::string());
     }
+
+
+    //const auto& stokens = HusdHdRenderStatsTokens();
+    stats[pxr::TfToken("ttfp")] = pxr::VtValue(444);
+    stats[pxr::TfToken("cameraCounts")] = pxr::VtValue(333);
+    stats[pxr::TfToken("system_memory")] = pxr::VtValue(222);
+    stats[pxr::TfToken("system_time")] = pxr::VtValue(111);
+    stats[pxr::TfToken("karma_version")] = pxr::VtValue(std::string("hdBadGL"));
+
+    stats[pxr::TfToken("hostname")] = pxr::VtValue(std::string("Paolo BESTIA"));
+    stats[pxr::TfToken("threads")] = pxr::VtValue(256);
+    stats[pxr::TfToken("load_memory")] = pxr::VtValue(1000000);
 
     return stats;
 }

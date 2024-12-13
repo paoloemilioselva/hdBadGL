@@ -34,7 +34,7 @@
       "inheritEnvironments": [ "msvc_x64_x64" ],
       "buildRoot": "${projectDir}\\out\\build\\${name}",
       "installRoot": "${projectDir}\\out\\install\\${name}",
-      "cmakeCommandArgs": "-DTARGET_CONFIG=houdini-20.5-278-311",
+      "cmakeCommandArgs": "-DTARGET_CONFIG=houdini-20.5-360-311",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
     }
